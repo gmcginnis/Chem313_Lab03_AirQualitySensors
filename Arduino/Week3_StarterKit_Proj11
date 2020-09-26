@@ -1,0 +1,77 @@
+/*
+Project 11: Crystal Ball
+Gillian McGinnis
+Pages 114–122 of the Arduino Projects Book
+
+Text displays have been customized.
+*/
+
+#include <LiquidCrystal.h>              //  Loading necessary library
+LiquidCrystal lcd(12,11,5,4,3,2);       //  Pins in use
+
+const int switchPin = 6;                //  Constant for the switch pin
+int switchState = 0;                    //  Variable for current switch state
+int prevSwitchState = 0;                //  Variable for previous switch state
+int reply;                              //  Reply the screen will display
+
+void setup(){
+  lcd.begin(16,2);
+  pinMode(switchPin,INPUT);
+
+  lcd.print("Ask the UNO...");
+  lcd.setCursor(0,1);                   //  First column of the second line
+  lcd.print("...if you dare!");
+}
+
+void loop(){
+  switchState = digitalRead(switchPin); //  Checking switch & putting value in switchState var
+
+  if(switchState != prevSwitchState){   //  If the current switch state differs from the previous
+    if(switchState == LOW){             //  If the current switch state is LOW
+      reply = random(8);                //  Random value
+
+      lcd.clear();                      //  Clear the screen
+      lcd.setCursor(0,0);               //  First column of the first line
+      lcd.print("Mighty UNO says:");
+      lcd.setCursor(0,1);               //  First column of the second line
+
+      switch(reply){                    //  Contains the replies in individual cases
+        
+        case 0:
+        lcd.print("Yarp");
+        break;
+        
+        case 1:
+        lcd.print("Most likely...");
+        break;
+        
+        case 2:
+        lcd.print("Most certainly");
+        break;
+
+        case 3:
+        lcd.print("Outlook good");
+        break;
+
+        case 4:
+        lcd.print("UNO is unsure!");
+        break;
+
+        case 5:
+        lcd.print("Ask again!");
+        break;
+
+        case 6:
+        lcd.print("Doubtful");
+        break;
+
+        case 7:
+        lcd.print("Nope");
+        break;
+      }
+
+    }
+  }
+
+  prevSwitchState = switchState;        //  Allows you to track changes the next time the loop runs
+}

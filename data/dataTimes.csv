@@ -1,0 +1,31 @@
+Location,Sublocation,Name,Sensor,Start,End,Notes
+Clinton,Const,Example,S00,15:32:20,15:35:20,
+Clinton,Bike,Example,S00,15:36:15,15:40:50,
+Clinton,Ped,Example,S00,15:41:20,15:45:40,
+Woodstock,Firehydrant,Example,S00,15:32:20,15:35:20,
+Woodstock,front of library,Example,S00,15:36:15,15:40:50,
+Woodstock,martin,Example,S00,15:41:20,15:45:40,
+Clinton,Const,Gillian,S17,6:48:00,6:53:10,Site inactive; only walkers & cyclists passed by
+Clinton,Ped,Gillian,S17,7:00:00,7:05:00,Only a few cars passed. My timestamp didn't fully restart :((
+Clinton,Bike,Gillian,S17,7:08:00,7:13:00,"Someone pulled up and idled their car for like 4 minutes of my measurements, and wasn't leaving anytime soon :/"
+Woodstock,Firehydrant,Arielle,S13,9:33:00,9:38:00,Not too busy
+Woodstock,front of library,Arielle,S13,9:50:00,9:55:00,many cars
+Woodstock,martin,Arielle,S13,9:42:00,9:47:00,Quiet
+Clinton,Const,Cristina,S04,9:37:00,9:42:00,"Construction ongoing, could smell a difference (smoky/exhaust)"
+Clinton,Ped,Cristina,S05,9:46:00,9:51:00,some cars
+Clinton,Bike,Cristina,S06,9:58:00,10:03:00,some bikes and cars
+Woodstock,Firehydrant,Yuxin,S08,10:29:30,10:34:30,many cars
+Woodstock,front of library,Yuxin,S08,10:49:30,10:54:30,many cars
+Woodstock,martin,Yuxin,S08,10:59:50,11:04:50,quiet
+Woodstock,Firehydrant,Dylann,S06,19:00:30,19:05:30,"night traffiic, breezy"
+Woodstock,front of library,Dylann,S06,19:08:01,19:13:01,"night traffiic, breezy"
+Woodstock,martin,Dylann,S06,19:16:10,19:21:10,quiet
+Clinton,Const,Michael,S16,18:11:00,18:16:00,Site inactive. Bicyclists and pedestrians present.
+Clinton,Bike,Michael,S16,18:18:00,18:23:00,quiet
+Clinton,Ped,Michael,S16,18:27:00,18:32:00,some joggers. cute cat.
+Woodstock,Firehydrant,Alex,S20,17:15:00,17:20:30,many cars
+Woodstock,front of library,Alex,S20,17:24:30,17:29:00,many cars
+Woodstock,martin,Alex,S20,17:30:00,17:35:00,many cars + a lawn mower nearby?
+Clinton,Const,Emma,S02,14:33,14:38,"construction ongoing, on corner of 16th and clinton instead of the spot marked on map due to sidewalk closure"
+Clinton,Bike,Emma,S02,14:53,14:58,leaf blower nearby
+Clinton,Ped,Emma,S02,14:43,14:48,

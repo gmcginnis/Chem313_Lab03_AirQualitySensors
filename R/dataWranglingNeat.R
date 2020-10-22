@@ -122,21 +122,3 @@ dataWoodstock_toMerge <- dataWoodstock_final %>%
 allData <- full_join(dataClinton_toMerge, dataWoodstock_toMerge)
 allData <- allData %>%
   select(pmValues, pmType, location, hmsTime, set)
-
-## Testing some data viz
-ggplot(allData, aes(x = hmsTime,
-                    y = pmValues,
-                    color = pmType))+
-  facet_wrap(~set)+
-  geom_point(alpha = 0.3)
-
-ggplot(allData, aes(x = hmsTime,
-                    y = pmValues,
-                    color = pmType))+
-  geom_point(alpha = 0.3)+
-  facet_wrap(~location)
-
-ggplot(allData, aes(x = hmsTime,
-                    y = pmValues))+
-  geom_point(alpha = 0.3)+
-  facet_grid(rows = vars(location), cols = vars(pmType))

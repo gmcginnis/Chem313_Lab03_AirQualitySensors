@@ -1,7 +1,7 @@
 ## Data visualziations for off-campus data from CSV files
 ## Written by Gillian McGinnis
 ## Created 21 October 2020
-## Updated 22 October 2020
+## Updated 24 October 2020
 
 library(ggthemes)
 source("R/dataWranglingNeat.R") ## Runs necessary warngles and prepares environment
@@ -23,6 +23,21 @@ labPM <- expression(paste("PM Value (", mu, "g/m"^3*")"))
 ## Note: if using expression in legend, will horizontally misalign; fix this (maybe?) by adding +theme(legend.text = element_text(hjust = 0))
 
 ## Data viz tests!
+
+ggplot(allData, aes(x = location_f,
+                    y = pmValues,
+                    color = pmType))+
+  geom_boxplot()+
+  scale_color_few(breaks = pmOrder,
+                  labels = pmLabels,
+                  palette = "Dark")+
+  labs(color = "PM Type",
+       x = "Sublocation",
+       y = labPM)+
+  scale_x_discrete(labels = locationLabeller)+
+  theme_few()+
+  theme(legend.text = element_text(hjust = 0))
+
 ## Note: loess method for geom_smooth takes time to process. "gam" method is faster but gives much curvier lines.
 
 ## 1 scatterplot: locations and sublocations not included at all
@@ -39,8 +54,28 @@ ggplot(allData, aes(x = hmsTime,
        y = labPM,
        title = "Comparing PM Values over time",
        caption = "Scatterplots of data points. Curve fit added with loess regression.")+
-  theme(legend.text = element_text(hjust = 0))+
-  theme_few()
+  theme_few()+
+  theme(legend.text = element_text(hjust = 0))
+
+## More subtle regression lines
+ggplot(allData, aes(x = hmsTime,
+                    y = pmValues,
+                    color = pmType))+
+  stat_smooth(method = "loess",
+              geom = "line",
+              size = 0.5,
+              alpha = 0.3)+
+  geom_point(alpha = 0.3)+
+  scale_color_few(breaks = pmOrder,
+                  labels = pmLabels,
+                  palette = "Dark")+
+  labs(color = "PM Type",
+       #title = "Comparing PM Values over time",
+       #caption = "Scatterplots of data points. Curve fit added with loess regression.",
+       x = labTime,
+       y = labPM)+
+  theme_few()+
+  theme(legend.text = element_text(hjust = 0))
 
 ## 2 scatter plots; does not include sublocation variable
 ggplot(allData, aes(x = hmsTime,
@@ -57,8 +92,29 @@ ggplot(allData, aes(x = hmsTime,
        y = labPM,
        title = "Comparing PM Values for the two locations over time",
        caption = "Scatterplots of data points, faceted by location. Curve fit added with loess regression.")+
-  theme(legend.text = element_text(hjust = 0))+
-  theme_few()
+  theme_few()+
+  theme(legend.text = element_text(hjust = 0))
+
+## More subtle regression lines
+ggplot(allData, aes(x = hmsTime,
+                    y = pmValues,
+                    color = pmType))+
+  stat_smooth(method = "loess",
+              geom = "line",
+              size = 0.5,
+              alpha = 0.3)+
+  geom_point(alpha = 0.3)+
+  facet_wrap(~set)+
+  scale_color_few(breaks = pmOrder,
+                  labels = pmLabels,
+                  palette = "Dark")+
+  labs(color = "PM Type",
+       x = labTime,
+       y = labPM,
+       title = "Comparing PM Values for the two locations over time",
+       caption = "Scatterplots of data points, faceted by location. Curve fit added with loess regression.")+
+  theme_few()+
+  theme(legend.text = element_text(hjust = 0))
 
 
 ## 6 scatterplots; facets by location, does not include set (i.e. Woodstock or Clinton) (but this is implied by location)
@@ -77,9 +133,32 @@ ggplot(allData, aes(x = hmsTime,
        y = labPM,
        title = "Comparing PM Values for the sublocations over time",
        caption = "Scatterplots of data points, faceted by sublocation. Curve fit added with loess regression.")+
-  theme(legend.text = element_text(hjust = 0))+
-  theme_few()
+  theme_few()+
+  theme(legend.text = element_text(hjust = 0))
 
+## More subtle regression lines
+ggplot(allData, aes(x = hmsTime,
+                    y = pmValues,
+                    color = pmType))+
+  stat_smooth(method = "loess",
+              geom = "line",
+              size = 0.5,
+              alpha = 0.3)+
+  geom_point(alpha = 0.3)+
+  facet_wrap(~location_f,
+             labeller = labeller(location_f = locationLabeller))+
+  scale_color_few(breaks = pmOrder,
+                  labels = pmLabels,
+                  palette = "Dark")+
+  labs(color = "PM Type",
+       x = labTime,
+       y = labPM,
+       title = "Comparing PM Values for the sublocations over time",
+       caption = "Scatterplots of data points, faceted by sublocation. Curve fits added with loess regression.")+
+  theme_few()+
+  theme(legend.text = element_text(hjust = 0),
+        axis.text.x = element_text(angle = 30,
+                                   vjust = 0.7))
 
 ## 18 scatterplots; facets by location and PM type
 ggplot(allData, aes(x = hmsTime,
@@ -118,8 +197,8 @@ ggplot(allData, aes(x = hmsTime,
        y = labPM,
        title = "Comparing PM Values for the sublocations over time",
        caption = "Scatterplots of data points, faceted by location. Curve fit added with loess regression.")+
-  theme(legend.text = element_text(hjust = 0))+
-  theme_few()
+  theme_few()+
+  theme(legend.text = element_text(hjust = 0))
 
 ## 2 boxplots
 ggplot(allData, aes(x = location,

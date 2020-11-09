@@ -62,9 +62,11 @@ dataTimes <- testData %>%
     pmType == "PM01" ~ "PM01",
     pmType == "PM25" ~ "PM25"
   )) %>%
-  filter(pmType == "PM25",
-         sensor != "S11") %>% #Excluding S11 because it only recorded 0s. Likely malfunctioning.
-  select(-c(pmType)) %>%
+  filter(pmType == "PM25") %>%
+  select(-c(pmType))
+
+dataFiltered <- dataTimes %>%
+  filter(sensor != "S11") %>% #Excluding S11 because it only recorded 0s. Likely malfunctioning.
   filter(sensor != "S02") # Decided to exclude S02. Timestamp not precise.
 
 
@@ -76,7 +78,7 @@ labCaption <- "Figure 1. Curve fits of PM data over time by sensor added with lo
 Data from S02 (did not report timestamps), S05 (taken at a different time), and S11 (malfunctioning sensor)\nhave been excluded."
 #labCaption <- expression(paste("Figure 1. Comparing PM"[2.5]*" values over time. Curve fits added with loess regression, and include a 95% CI.\nData from S02 (did not report timestamps), S05 (taken at a different time), and S11 (malfunctioning sensor) have been excluded."))
 
-aqPlot <- ggplot(dataTimes, aes(x = hmsTime, y = pmValues, color = sensor, fill = sensor))+
+aqPlot <- ggplot(dataFiltered, aes(x = hmsTime, y = pmValues, color = sensor, fill = sensor))+
   stat_smooth()+
   scale_colour_manual(
     values = wes_palette(12, name = "Darjeeling1", type = "continuous"),
@@ -119,12 +121,33 @@ opStats <- opDataMod %>%
          max = mean+sd) %>%
   select(!c(hmsTime))
 
+opSummary <- opStats %>%
+  select(c(sensor, sd, mean, min, max)) %>%
+  slice(1)
+
 aqPlot +
-  geom_hline(data = opStats, aes(yintercept = mean, color = sensor))+
-  geom_ribbon(data = opStats, aes(color = sensor, fill = sensor,
+  geom_hline(data = opSummary, aes(yintercept = mean, color = sensor))+
+  geom_hline(data = opSummary, aes(yintercept = min, color = sensor),
+             linetype = "dotted")+
+  geom_hline(data = opSummary, aes(yintercept = max, color = sensor),
+             linetype = "dotted")
+
+aqPlot +
+  geom_hline(data = opSummary, aes(yintercept = mean, color = sensor))+
+  geom_ribbon(data = opSummary, aes(color = sensor, fill = sensor,
                                   ymin = min, ymax = max,
                                   xmin = -Inf, xmax = Inf),
               alpha = 0.3)
+
+
+## More plot tests below
+
+# aqPlot +
+#   geom_hline(data = opStats, aes(yintercept = mean, color = sensor))+
+#   geom_ribbon(data = opStats, aes(color = sensor, fill = sensor,
+#                                   ymin = min, ymax = max,
+#                                   xmin = -Inf, xmax = Inf),
+#               alpha = 0.3)
 
 aqPlot +
   geom_hline(data = opStats, aes(yintercept = mean, color = sensor))+
@@ -133,9 +156,10 @@ aqPlot +
   geom_hline(data = opStats, aes(yintercept = max, color = sensor),
              linetype = "dotted")
 
-aqPlot +
-  geom_hline(data = opDataMod, aes(yintercept = pmValues, color = sensor),
-             linetype = "longdash")
+
+# aqPlot +
+#   geom_hline(data = opDataMod, aes(yintercept = pmValues, color = sensor),
+#              linetype = "longdash")
 
 
 mergedData <- full_join(dataTimes, opDataMod)
@@ -148,11 +172,52 @@ mergedStats <- mergedData %>%
   summarize(mean = mean(pmValues),
             sd = sd(pmValues))
 
+statsMinimal <- mergedStats %>%
+  mutate(mean = round(mean, 0),
+         sd = round(sd, 0))
+
+
+labTitleBox <- expression(paste("Comparing PM"[2.5]*" values by sensor"))
+labCaptionBox <- "Figure 2. Boxplots of PM data by sensor. No sensors excluded."
+
+aqBox <- ggplot(mergedData, aes(x = sensor, y = pmValues, color = sensor))+
+  geom_boxplot()+
+  scale_colour_manual(
+    values = wes_palette(14, name = "Darjeeling1", type = "continuous"),
+    aesthetics  = c("color", "fill"))+
+  labs(color = "Sensor",
+       x = "Sensor",
+       y = labPM,
+       title = labTitleBox,
+       caption = labCaptionBox)+
+  theme_few()+
+  theme(plot.caption = element_text(hjust = 0))
+
+mergedFiltered <- mergedData %>%
+  filter(sensor != "S09",
+         sensor != "S11")
+
+aqBoxMin <- ggplot(mergedFiltered, aes(x = sensor, y = pmValues, color = sensor))+
+  geom_boxplot()+
+  scale_colour_manual(
+    values = wes_palette(14, name = "Darjeeling1", type = "continuous"),
+    aesthetics  = c("color", "fill"))+
+  labs(color = "Sensor",
+       x = "Sensor",
+       y = labPM,
+       title = labTitleBox,
+       caption = "Some sensors excluded")+
+  theme_few()+
+  theme(plot.caption = element_text(hjust = 0))
+
+
 collapsedData <- mergedData %>%
   select(!c(hmsTime)) %>%
   filter(!is.na(pmValues)) %>%
+  filter(sensor != "S02") %>%
   mutate(newSensor = case_when(
     sensor == "OPS" ~ "OPS",
+    #sensor == "S02" ~ "AQ",
     sensor == "S03" ~ "AQ",
     sensor == "S04" ~ "AQ",
     sensor == "S08" ~ "AQ",
@@ -168,15 +233,23 @@ collapsedData <- mergedData %>%
   select(!c(sensor)) %>%
   group_by(newSensor) %>%
   summarize(mean = mean(pmValues),
-            sd = sd(pmValues))
+            sd = sd(pmValues)) %>%
+  mutate(min = mean-sd,
+         max = mean+sd)
+
+# ggplot(collapsedData, aes(x = newSensor, y = mean))+
+#   geom_bar(stat='identity')+
+#   geom_errorbar(ymin = min, ymax = max)
 
 
+#### Some very messy stat tests down here
+  
 aqData <- dataTimes %>%
   group_by(sensor) %>%
   filter(!is.na(pmValues))
 
 ## Some ANOVA stuff. This gets messy quickly.
-aqT <- t.test(pmValues ~ sensor, data = aqData)
+#aqT <- t.test(pmValues ~ sensor, data = aqData)
 
 aqAov <- aov(pmValues ~ sensor, data = aqData)
 tidy(aqAov)
@@ -185,7 +258,83 @@ plot(aqTuckey, las = 1)
 pairwise.t.test(aqData$pmValues, aqData$sensor)
 
 
+collapsedT <- mergedData %>%
+  select(!c(hmsTime)) %>%
+  filter(!is.na(pmValues)) %>%
+  filter(sensor != "S11") %>%
+  mutate(newSensor = case_when(
+    sensor == "OPS" ~ "OPS",
+    sensor == "S02" ~ "AQ",
+    sensor == "S03" ~ "AQ",
+    sensor == "S04" ~ "AQ",
+    sensor == "S08" ~ "AQ",
+    sensor == "S09" ~ "AQ",
+    sensor == "S10" ~ "AQ",
+    #sensor == "S11" ~ "AQ",
+    sensor == "S14" ~ "AQ",
+    sensor == "S15" ~ "AQ",
+    sensor == "S17" ~ "AQ",
+    sensor == "S18" ~ "AQ",
+    sensor == "S19" ~ "AQ",
+    sensor == "S20" ~ "AQ")) %>%
+  select(!c(sensor)) %>%
+  group_by(newSensor)
 
+
+collapsedAQ <- collapsedT %>%
+  filter(newSensor == "AQ")
+collapsedOP <- collapsedT %>%
+  filter(newSensor == "OPS")
+
+var.test(collapsedAQ$pmValues, collapsedOP$pmValues)
+## Critical value at numdf = inf, denomdf = 2: 19.5
+## F_calc = 8.343067, p = 0.2259
+
+sensorComp <- t.test(pmValues ~ newSensor, data = collapsedT)
+tidy(sensorComp)
+# value of student's t @ 95CI, 2DF = 12.706
+# t_critical(DF = 2) = 12.706, p = 0.05
+# |t-stat| = 18.358, p-value = 0.00288
+# They are statistically significantly different
+
+
+fullAov <- aov(pmValues ~ sensor, data = collapsedData)
+tidy(fullAov)
+fullTuckey <- TukeyHSD(fullAov)
+plot(fullTuckey, las = 1)
+pairwise.t.test(aqData$pmValues, aqData$sensor)
+
+tukeyDf <- as.data.frame(fullTuckey$sensor)
+tukeyDf$pair = rownames(tukeyDf)
+
+tukeyPlot <- tukeyDf %>%
+  mutate(label = case_when(
+    `p adj` < 0.05 ~ "p < 0.05", ## Reject null hypothesiss; diff is significant
+    `p adj` >= 0.05 ~ "Non-Sig" ## Fail to reject null hyp; diff is not significant
+  ))
+
+tukeyMinimal <- tukeyPlot %>%
+  filter(label == "Non-Sig")
+
+tukeyColorful <- tukeyPlot %>%
+  mutate(sensor = case_when(
+    str_detect(pair, "OPS") ~ "OPS"
+  )) %>%
+  replace_na(list(sensor = "AQ"))
+
+
+ggplot(tukeyColorful, aes(color = sensor))+
+  geom_hline(yintercept=0, lty="11", color="grey30") +
+  geom_errorbar(aes(pair, ymin=lwr, ymax=upr), width=0.2) +
+  geom_point(aes(pair, diff)) +
+  labs(color="",
+       x = "Pairing",
+       y = "Difference")+
+  scale_x_discrete()+
+  theme_few()+
+  coord_flip()
+
+#tukeyFull$set <- factor(tukeyFull$set, levels = c('pm01', 'pm25', 'pm10'))
 
 
 ## Ugly plot 1

@@ -1,7 +1,11 @@
 ## Problem Set 6, Question 6
 ## Written by Gillian McGinnis
 ## Created 07 November 2020
-## Updated 07 November 2020
+## Updated 08 November 2020
+
+## This script is kind of all over the place but is generally in order of proceedings.
+## General wrangling up top, start of data viz, more wrangling, more data viz, and some quick stat tests (w viz) that I ended up not using.
+## To find sources for each visualization I ended up using, ctrl-f for Table 1, Figure 1, Figure 2, Figure 3, or Figure 4.
 
 library(tidyverse)
 library(lubridate)
@@ -78,6 +82,7 @@ labCaption <- "Figure 1. Curve fits of PM data over time by sensor added with lo
 Data from S02 (did not report timestamps), S05 (taken at a different time), and S11 (malfunctioning sensor)\nhave been excluded."
 #labCaption <- expression(paste("Figure 1. Comparing PM"[2.5]*" values over time. Curve fits added with loess regression, and include a 95% CI.\nData from S02 (did not report timestamps), S05 (taken at a different time), and S11 (malfunctioning sensor) have been excluded."))
 
+## This ended up as Figure 4
 aqPlot <- ggplot(dataFiltered, aes(x = hmsTime, y = pmValues, color = sensor, fill = sensor))+
   stat_smooth()+
   scale_colour_manual(
@@ -132,12 +137,12 @@ aqPlot +
   geom_hline(data = opSummary, aes(yintercept = max, color = sensor),
              linetype = "dotted")
 
-aqPlot +
-  geom_hline(data = opSummary, aes(yintercept = mean, color = sensor))+
-  geom_ribbon(data = opSummary, aes(color = sensor, fill = sensor,
-                                  ymin = min, ymax = max,
-                                  xmin = -Inf, xmax = Inf),
-              alpha = 0.3)
+# aqPlot +
+#   geom_hline(data = opSummary, aes(yintercept = mean, color = sensor))+
+#   geom_ribbon(data = opSummary, aes(color = sensor, fill = sensor,
+#                                   ymin = min, ymax = max,
+#                                   xmin = -Inf, xmax = Inf),
+#               alpha = 0.3)
 
 
 ## More plot tests below
@@ -149,6 +154,7 @@ aqPlot +
 #                                   xmin = -Inf, xmax = Inf),
 #               alpha = 0.3)
 
+## This ended up as Figure 1
 aqPlot +
   geom_hline(data = opStats, aes(yintercept = mean, color = sensor))+
   geom_hline(data = opStats, aes(yintercept = min, color = sensor),
@@ -172,6 +178,7 @@ mergedStats <- mergedData %>%
   summarize(mean = mean(pmValues),
             sd = sd(pmValues))
 
+## This ended up as Table 1
 statsMinimal <- mergedStats %>%
   mutate(mean = round(mean, 0),
          sd = round(sd, 0))
@@ -180,6 +187,7 @@ statsMinimal <- mergedStats %>%
 labTitleBox <- expression(paste("Comparing PM"[2.5]*" values by sensor"))
 labCaptionBox <- "Figure 2. Boxplots of PM data by sensor. No sensors excluded."
 
+## This ended up as Figure 1
 aqBox <- ggplot(mergedData, aes(x = sensor, y = pmValues, color = sensor))+
   geom_boxplot()+
   scale_colour_manual(
@@ -197,6 +205,7 @@ mergedFiltered <- mergedData %>%
   filter(sensor != "S09",
          sensor != "S11")
 
+## This ended up as Figure 2
 aqBoxMin <- ggplot(mergedFiltered, aes(x = sensor, y = pmValues, color = sensor))+
   geom_boxplot()+
   scale_colour_manual(

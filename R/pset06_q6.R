@@ -78,6 +78,7 @@ labTime <- "Time of day (HH:MM:SS)"
 labPM <- expression(paste("PM"[2.5]*" Value (", mu, "g/m"^3*")"))
 labTitle <- expression(paste("Comparing PM"[2.5]*" values over time"))
 
+##Lab caption might not be correct figure number for all figures
 labCaption <- "Figure 1. Curve fits of PM data over time by sensor added with loess regression, and include a 95% CI.
 Data from S02 (did not report timestamps), S05 (taken at a different time), and S11 (malfunctioning sensor)\nhave been excluded."
 #labCaption <- expression(paste("Figure 1. Comparing PM"[2.5]*" values over time. Curve fits added with loess regression, and include a 95% CI.\nData from S02 (did not report timestamps), S05 (taken at a different time), and S11 (malfunctioning sensor) have been excluded."))
@@ -176,7 +177,7 @@ aqPlot +
 #                                   xmin = -Inf, xmax = Inf),
 #               alpha = 0.3)
 
-## This ended up as Figure 1
+## This ended up as Figure 3
 aqPlot +
   geom_hline(data = opStats, aes(yintercept = mean, color = sensor))+
   geom_hline(data = opStats, aes(yintercept = min, color = sensor),

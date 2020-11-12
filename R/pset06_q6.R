@@ -1,7 +1,7 @@
 ## Problem Set 6, Question 6
 ## Written by Gillian McGinnis
 ## Created 07 November 2020
-## Updated 08 November 2020
+## Updated 11 November 2020
 
 ## This script is kind of all over the place but is generally in order of proceedings.
 ## General wrangling up top, start of data viz, more wrangling, more data viz, and some quick stat tests (w viz) that I ended up not using.
@@ -105,6 +105,29 @@ aqPlot <- ggplot(dataFiltered, aes(x = hmsTime, y = pmValues, color = sensor, fi
   #           position=position_nudge(0.1), hjust=0, show.legend=FALSE)
 
 aqPlot
+
+
+## playing with line charts. These ended up as very busy graphs due to the sheer amount of datapoints.
+# dataFilteredDouble <- dataFiltered %>%
+#   filter(sensor != "S09")
+# 
+# ggplot(dataFilteredDouble, aes(x = hmsTime, y = pmValues, color = sensor, fill = sensor))+
+#   geom_point(alpha=0.1)+
+#   geom_line(alpha=0.1)+
+#   scale_colour_manual(
+#     values = wes_palette(12, name = "Darjeeling1", type = "continuous"),
+#     aesthetics  = c("color", "fill"))+
+#   labs(color = "Sensor",
+#        fill = "Sensor",
+#        x = labTime,
+#        y = labPM,
+#        title = labTitle,
+#        caption = labCaption)+
+#   theme_few()+
+#   theme(plot.caption = element_text(hjust = 0))
+
+
+
   
 opDataMod <- opData %>%
   mutate(period = c(
@@ -137,15 +160,14 @@ aqPlot +
   geom_hline(data = opSummary, aes(yintercept = max, color = sensor),
              linetype = "dotted")
 
+
+##Some plot tests
 # aqPlot +
 #   geom_hline(data = opSummary, aes(yintercept = mean, color = sensor))+
 #   geom_ribbon(data = opSummary, aes(color = sensor, fill = sensor,
 #                                   ymin = min, ymax = max,
 #                                   xmin = -Inf, xmax = Inf),
 #               alpha = 0.3)
-
-
-## More plot tests below
 
 # aqPlot +
 #   geom_hline(data = opStats, aes(yintercept = mean, color = sensor))+
@@ -220,128 +242,128 @@ aqBoxMin <- ggplot(mergedFiltered, aes(x = sensor, y = pmValues, color = sensor)
   theme(plot.caption = element_text(hjust = 0))
 
 
-collapsedData <- mergedData %>%
-  select(!c(hmsTime)) %>%
-  filter(!is.na(pmValues)) %>%
-  filter(sensor != "S02") %>%
-  mutate(newSensor = case_when(
-    sensor == "OPS" ~ "OPS",
-    #sensor == "S02" ~ "AQ",
-    sensor == "S03" ~ "AQ",
-    sensor == "S04" ~ "AQ",
-    sensor == "S08" ~ "AQ",
-    sensor == "S09" ~ "AQ",
-    sensor == "S10" ~ "AQ",
-    sensor == "S11" ~ "AQ",
-    sensor == "S14" ~ "AQ",
-    sensor == "S15" ~ "AQ",
-    sensor == "S17" ~ "AQ",
-    sensor == "S18" ~ "AQ",
-    sensor == "S19" ~ "AQ",
-    sensor == "S20" ~ "AQ")) %>%
-  select(!c(sensor)) %>%
-  group_by(newSensor) %>%
-  summarize(mean = mean(pmValues),
-            sd = sd(pmValues)) %>%
-  mutate(min = mean-sd,
-         max = mean+sd)
-
-# ggplot(collapsedData, aes(x = newSensor, y = mean))+
-#   geom_bar(stat='identity')+
-#   geom_errorbar(ymin = min, ymax = max)
-
-
 #### Some very messy stat tests down here
-  
-aqData <- dataTimes %>%
-  group_by(sensor) %>%
-  filter(!is.na(pmValues))
 
-## Some ANOVA stuff. This gets messy quickly.
-#aqT <- t.test(pmValues ~ sensor, data = aqData)
-
-aqAov <- aov(pmValues ~ sensor, data = aqData)
-tidy(aqAov)
-aqTuckey <- TukeyHSD(aqAov)
-plot(aqTuckey, las = 1)
-pairwise.t.test(aqData$pmValues, aqData$sensor)
-
-
-collapsedT <- mergedData %>%
-  select(!c(hmsTime)) %>%
-  filter(!is.na(pmValues)) %>%
-  filter(sensor != "S11") %>%
-  mutate(newSensor = case_when(
-    sensor == "OPS" ~ "OPS",
-    sensor == "S02" ~ "AQ",
-    sensor == "S03" ~ "AQ",
-    sensor == "S04" ~ "AQ",
-    sensor == "S08" ~ "AQ",
-    sensor == "S09" ~ "AQ",
-    sensor == "S10" ~ "AQ",
-    #sensor == "S11" ~ "AQ",
-    sensor == "S14" ~ "AQ",
-    sensor == "S15" ~ "AQ",
-    sensor == "S17" ~ "AQ",
-    sensor == "S18" ~ "AQ",
-    sensor == "S19" ~ "AQ",
-    sensor == "S20" ~ "AQ")) %>%
-  select(!c(sensor)) %>%
-  group_by(newSensor)
-
-
-collapsedAQ <- collapsedT %>%
-  filter(newSensor == "AQ")
-collapsedOP <- collapsedT %>%
-  filter(newSensor == "OPS")
-
-var.test(collapsedAQ$pmValues, collapsedOP$pmValues)
-## Critical value at numdf = inf, denomdf = 2: 19.5
-## F_calc = 8.343067, p = 0.2259
-
-sensorComp <- t.test(pmValues ~ newSensor, data = collapsedT)
-tidy(sensorComp)
-# value of student's t @ 95CI, 2DF = 12.706
-# t_critical(DF = 2) = 12.706, p = 0.05
-# |t-stat| = 18.358, p-value = 0.00288
-# They are statistically significantly different
-
-
-fullAov <- aov(pmValues ~ sensor, data = collapsedData)
-tidy(fullAov)
-fullTuckey <- TukeyHSD(fullAov)
-plot(fullTuckey, las = 1)
-pairwise.t.test(aqData$pmValues, aqData$sensor)
-
-tukeyDf <- as.data.frame(fullTuckey$sensor)
-tukeyDf$pair = rownames(tukeyDf)
-
-tukeyPlot <- tukeyDf %>%
-  mutate(label = case_when(
-    `p adj` < 0.05 ~ "p < 0.05", ## Reject null hypothesiss; diff is significant
-    `p adj` >= 0.05 ~ "Non-Sig" ## Fail to reject null hyp; diff is not significant
-  ))
-
-tukeyMinimal <- tukeyPlot %>%
-  filter(label == "Non-Sig")
-
-tukeyColorful <- tukeyPlot %>%
-  mutate(sensor = case_when(
-    str_detect(pair, "OPS") ~ "OPS"
-  )) %>%
-  replace_na(list(sensor = "AQ"))
-
-
-ggplot(tukeyColorful, aes(color = sensor))+
-  geom_hline(yintercept=0, lty="11", color="grey30") +
-  geom_errorbar(aes(pair, ymin=lwr, ymax=upr), width=0.2) +
-  geom_point(aes(pair, diff)) +
-  labs(color="",
-       x = "Pairing",
-       y = "Difference")+
-  scale_x_discrete()+
-  theme_few()+
-  coord_flip()
+# collapsedData <- mergedData %>%
+#   select(!c(hmsTime)) %>%
+#   filter(!is.na(pmValues)) %>%
+#   filter(sensor != "S02") %>%
+#   mutate(newSensor = case_when(
+#     sensor == "OPS" ~ "OPS",
+#     #sensor == "S02" ~ "AQ",
+#     sensor == "S03" ~ "AQ",
+#     sensor == "S04" ~ "AQ",
+#     sensor == "S08" ~ "AQ",
+#     sensor == "S09" ~ "AQ",
+#     sensor == "S10" ~ "AQ",
+#     sensor == "S11" ~ "AQ",
+#     sensor == "S14" ~ "AQ",
+#     sensor == "S15" ~ "AQ",
+#     sensor == "S17" ~ "AQ",
+#     sensor == "S18" ~ "AQ",
+#     sensor == "S19" ~ "AQ",
+#     sensor == "S20" ~ "AQ")) %>%
+#   select(!c(sensor)) %>%
+#   group_by(newSensor) %>%
+#   summarize(mean = mean(pmValues),
+#             sd = sd(pmValues)) %>%
+#   mutate(min = mean-sd,
+#          max = mean+sd)
+# 
+# # ggplot(collapsedData, aes(x = newSensor, y = mean))+
+# #   geom_bar(stat='identity')+
+# #   geom_errorbar(ymin = min, ymax = max)
+# 
+#   
+# aqData <- dataTimes %>%
+#   group_by(sensor) %>%
+#   filter(!is.na(pmValues))
+# 
+# ## Some ANOVA stuff. This gets messy quickly.
+# #aqT <- t.test(pmValues ~ sensor, data = aqData)
+# 
+# aqAov <- aov(pmValues ~ sensor, data = aqData)
+# tidy(aqAov)
+# aqTuckey <- TukeyHSD(aqAov)
+# plot(aqTuckey, las = 1)
+# pairwise.t.test(aqData$pmValues, aqData$sensor)
+# 
+# 
+# collapsedT <- mergedData %>%
+#   select(!c(hmsTime)) %>%
+#   filter(!is.na(pmValues)) %>%
+#   filter(sensor != "S11") %>%
+#   mutate(newSensor = case_when(
+#     sensor == "OPS" ~ "OPS",
+#     sensor == "S02" ~ "AQ",
+#     sensor == "S03" ~ "AQ",
+#     sensor == "S04" ~ "AQ",
+#     sensor == "S08" ~ "AQ",
+#     sensor == "S09" ~ "AQ",
+#     sensor == "S10" ~ "AQ",
+#     #sensor == "S11" ~ "AQ",
+#     sensor == "S14" ~ "AQ",
+#     sensor == "S15" ~ "AQ",
+#     sensor == "S17" ~ "AQ",
+#     sensor == "S18" ~ "AQ",
+#     sensor == "S19" ~ "AQ",
+#     sensor == "S20" ~ "AQ")) %>%
+#   select(!c(sensor)) %>%
+#   group_by(newSensor)
+# 
+# 
+# collapsedAQ <- collapsedT %>%
+#   filter(newSensor == "AQ")
+# collapsedOP <- collapsedT %>%
+#   filter(newSensor == "OPS")
+# 
+# var.test(collapsedAQ$pmValues, collapsedOP$pmValues)
+# ## Critical value at numdf = inf, denomdf = 2: 19.5
+# ## F_calc = 8.343067, p = 0.2259
+# 
+# sensorComp <- t.test(pmValues ~ newSensor, data = collapsedT)
+# tidy(sensorComp)
+# # value of student's t @ 95CI, 2DF = 12.706
+# # t_critical(DF = 2) = 12.706, p = 0.05
+# # |t-stat| = 18.358, p-value = 0.00288
+# # They are statistically significantly different
+# 
+# 
+# fullAov <- aov(pmValues ~ sensor, data = collapsedData)
+# tidy(fullAov)
+# fullTuckey <- TukeyHSD(fullAov)
+# plot(fullTuckey, las = 1)
+# pairwise.t.test(aqData$pmValues, aqData$sensor)
+# 
+# tukeyDf <- as.data.frame(fullTuckey$sensor)
+# tukeyDf$pair = rownames(tukeyDf)
+# 
+# tukeyPlot <- tukeyDf %>%
+#   mutate(label = case_when(
+#     `p adj` < 0.05 ~ "p < 0.05", ## Reject null hypothesiss; diff is significant
+#     `p adj` >= 0.05 ~ "Non-Sig" ## Fail to reject null hyp; diff is not significant
+#   ))
+# 
+# tukeyMinimal <- tukeyPlot %>%
+#   filter(label == "Non-Sig")
+# 
+# tukeyColorful <- tukeyPlot %>%
+#   mutate(sensor = case_when(
+#     str_detect(pair, "OPS") ~ "OPS"
+#   )) %>%
+#   replace_na(list(sensor = "AQ"))
+# 
+# 
+# ggplot(tukeyColorful, aes(color = sensor))+
+#   geom_hline(yintercept=0, lty="11", color="grey30") +
+#   geom_errorbar(aes(pair, ymin=lwr, ymax=upr), width=0.2) +
+#   geom_point(aes(pair, diff)) +
+#   labs(color="",
+#        x = "Pairing",
+#        y = "Difference")+
+#   scale_x_discrete()+
+#   theme_few()+
+#   coord_flip()
 
 #tukeyFull$set <- factor(tukeyFull$set, levels = c('pm01', 'pm25', 'pm10'))
 
